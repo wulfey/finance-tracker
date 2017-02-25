@@ -30,4 +30,42 @@ class User < ActiveRecord::Base
     "Anonymous"
   end
   
+  def not_friends_with?(friend_id)
+    friendships.where(friend_id: friend_id).count < 1
+  end
+  
+  def except_current_user(users)
+    users.reject { |user| user.id == self.id }
+    # reject each user that matched id of current user, whoever is caller
+    #  return scolection witout current user
+  end
+  
+  def self.search(param)
+    return User.non if param.blank?
+    
+    param.strip!
+    param.downcase!
+    
+    (first_name_matches(param) + last_name_matches(param) + email_matches(param)).uniq
+  end
+  
+  def self.first_name_matches(param) 
+    matches('first_name', param)
+  end 
+  
+  def self.last_name_matches(param) 
+    matches('last_name', param)
+  end 
+  
+  def self.email_matches(param) 
+    matches('email', param)
+  end 
+  
+  def self.matches(field_name, param)
+    where("lower(#{field_name}) like ?", "%#{param}%")
+    # wildcards are saying it is not an exact match 
+    # 
+  end
+
+  
 end
